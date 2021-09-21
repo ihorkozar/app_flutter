@@ -101,9 +101,19 @@ class _CategoryRouteState extends State<CategoryRoute> {
       backgroundColor: _backgroundColor,
     );
 
+    final floatingActionButton = FloatingActionButton.extended(
+      onPressed: () {
+        // Add your onPressed code here!
+      },
+      label: const Text('Approve'),
+      icon: const Icon(Icons.thumb_up),
+      backgroundColor: Colors.pink,
+    );
+
     return Scaffold(
       appBar: appBar,
       body: listView,
+      floatingActionButton: floatingActionButton,
     );
   }
 }

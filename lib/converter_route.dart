@@ -22,8 +22,8 @@ class _ConverterState extends State<ConverterRoute> {
     final unitWidgets = widget.units.map((Unit unit) {
       return Container(
         color: widget.color,
-        margin: EdgeInsets.all(8.0),
-        padding: EdgeInsets.all(16.0),
+        margin: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
             Text(

@@ -11,38 +11,36 @@ class Category extends StatelessWidget {
   final IconData iconLocation;
   final List<Unit> units;
 
-  /// Creates a [Category].
-  const Category({Key? key,
-    required this.name,
-    required this.color,
-    required this.iconLocation,
-    required this.units})
+  const Category(
+      {Key? key,
+      required this.name,
+      required this.color,
+      required this.iconLocation,
+      required this.units})
       : super(key: key);
 
-  ///Navigate to Converter
   void _navigateToConverter(BuildContext context) {
     Navigator.of(context).push(MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          return Scaffold(
-            appBar: AppBar(
-              elevation: 1.0,
-              title: Text(
-                name,
-                style: Theme.of(context).textTheme.headline2,
-              ),
-              centerTitle: true,
-              backgroundColor: color,
+      builder: (BuildContext context) {
+        return Scaffold(
+          appBar: AppBar(
+            elevation: 1.0,
+            title: Text(
+              name,
+              style: Theme.of(context).textTheme.headline2,
             ),
-            body: ConverterRoute(
-              color: color,
-              units: units,
-            ),
-          );
-        },
+            centerTitle: true,
+            backgroundColor: color,
+          ),
+          body: ConverterRoute(
+            color: color,
+            units: units,
+          ),
+        );
+      },
     ));
   }
 
-  /// Custom widget that shows [Category] information.
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasMaterial(context));
@@ -73,10 +71,7 @@ class Category extends StatelessWidget {
                   child: Text(
                     name,
                     textAlign: TextAlign.center,
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .headline6,
+                    style: Theme.of(context).textTheme.headline6,
                   ),
                 ),
               ],
