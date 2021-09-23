@@ -1,18 +1,18 @@
 import 'package:app_flutter/category.dart';
+import 'package:app_flutter/unit.dart';
 import 'package:flutter/material.dart';
-
-/// Category Route (screen).
-///
-/// This is the 'home' screen of the Unit Converter. It shows a header and
-/// a list of [Categories].
-///
-/// While it is named CategoryRoute, a more apt name would be CategoryScreen,
-/// because it is responsible for the UI at the route's destination.
 
 final _backgroundColor = Colors.green[100];
 
-class CategoryRoute extends StatelessWidget {
+class CategoryRoute extends StatefulWidget {
   const CategoryRoute();
+
+  @override
+  _CategoryRouteState createState() => _CategoryRouteState();
+}
+
+class _CategoryRouteState extends State<CategoryRoute> {
+  final _categories = <Category>[];
 
   static const _categoryNames = <String>[
     'Length',
@@ -25,7 +25,7 @@ class CategoryRoute extends StatelessWidget {
     'Currency',
   ];
 
-  static const _baseColors = <Color>[
+  static const _baseColors = [
     Colors.teal,
     Colors.orange,
     Colors.pinkAccent,
@@ -36,51 +36,62 @@ class CategoryRoute extends StatelessWidget {
     Colors.red,
   ];
 
-  Widget _buildCategoryWidgets(List<Widget> categories) {
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) => categories[index],
-      itemCount: categories.length,
+  @override
+  void initState() {
+    super.initState();
+    for (var i = 0; i < _categoryNames.length; i++) {
+      _categories.add(Category(
+        name: _categoryNames[i],
+        color: _baseColors[i],
+        iconLocation: Icons.cake,
+        units: _unitList(_categoryNames[i]),
+      ));
+    }
+  }
+
+  Widget _buildCategoryWidgets() {
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        if (orientation == Orientation.portrait) {
+          return ListView.builder(
+            itemBuilder: (BuildContext context, int index) =>
+                _categories[index],
+            itemCount: _categories.length,
+          );
+        } else {
+          return GridView.count(
+            crossAxisCount: 2,
+            childAspectRatio: 2.5,
+            children: _categories,
+          );
+        }
+      },
     );
-    // if (Orientation.portrait) {
-    //   return ListView.builder(
-    //     itemBuilder: (BuildContext context, int index) => categories[index],
-    //     itemCount: categories.length,
-    //   );
-    // } else {
-    //   return GridView.count(
-    //     crossAxisCount: 2,
-    //     childAspectRatio: 2.5,
-    //     children: categories,
-    //   );
-    // }
+  }
+
+  ///Mock list
+  List<Unit> _unitList(String name) {
+    return List.generate(10, (int i) {
+      i += 1;
+      return Unit(
+        name: '$name Unit $i',
+        conversion: i.toDouble(),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Create a list of the eight Categories, using the names and colors
-    // from above. Use a placeholder icon, such as `Icons.cake` for each
-    // Category. We'll add custom icons later.
-    final categories = <Category>[];
-
-    for (var i = 0; i < _categoryNames.length; i++) {
-      categories.add(Category(
-        name: _categoryNames[i],
-        color: _baseColors[i],
-        iconLocation: Icons.cake,
-      ));
-    }
-
-    // TODO: Create a list view of the Categories
+    // list view of the Categories
     final listView = Container(
       color: _backgroundColor,
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: _buildCategoryWidgets(categories),
+      child: _buildCategoryWidgets(),
     );
 
-    // TODO: Create an App Bar
     final appBar = AppBar(
       elevation: 0.0,
-      title: Text(
+      title: const Text(
         'Converter',
         style: TextStyle(
           color: Colors.black,
