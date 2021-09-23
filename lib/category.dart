@@ -35,6 +35,7 @@ class Category extends StatelessWidget {
               color: color,
               units: units,
             ),
+            resizeToAvoidBottomInset: false, //to stabilize the screen when the keyboard is open
           );
         },
     ));
@@ -73,7 +74,7 @@ class Category extends StatelessWidget {
                     style: Theme
                         .of(context)
                         .textTheme
-                        .headline6,
+                        .headline5,
                   ),
                 ),
               ],
