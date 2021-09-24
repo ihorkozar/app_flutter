@@ -107,7 +107,7 @@ class _UnitConverterState extends State<UnitConverter> {
 
   Unit? _getUnit(String? unitName) {
     return widget.category.units.firstWhereOrNull(
-          (Unit unit) {
+      (Unit unit) {
         return unit.name == unitName;
       },
     );
@@ -170,7 +170,8 @@ class _UnitConverterState extends State<UnitConverter> {
       padding: _padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [TextField(
+        children: [
+          TextField(
             style: Theme.of(context).textTheme.headline4,
             decoration: InputDecoration(
               labelStyle: Theme.of(context).textTheme.headline4,
@@ -229,8 +230,22 @@ class _UnitConverterState extends State<UnitConverter> {
     );
 
     return Padding(
-      padding: _padding,
-      child: converter,
-    );
+        padding: _padding,
+        child: SingleChildScrollView(
+          child: OrientationBuilder(
+            builder: (BuildContext context, Orientation orientation) {
+              if (orientation == Orientation.portrait) {
+                return converter;
+              } else {
+                return Center(
+                  child: SizedBox(
+                    width: 450.0,
+                    child: converter,
+                  ),
+                );
+              }
+            },
+          ),
+        ));
   }
 }
