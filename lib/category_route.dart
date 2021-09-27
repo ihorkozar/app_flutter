@@ -1,11 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
-import 'package:app_flutter/category.dart';
-import 'package:app_flutter/unit.dart';
-import 'package:app_flutter/unit_converter.dart';
 import 'package:flutter/material.dart';
 import 'api.dart';
 import 'backdrop/backdrop.dart';
+import 'category.dart';
 import 'category_tile.dart';
+import 'unit.dart';
+import 'unit_converter.dart';
 
 class CategoryRoute extends StatefulWidget {
   const CategoryRoute({Key? key}) : super(key: key);
@@ -15,10 +16,10 @@ class CategoryRoute extends StatefulWidget {
 }
 
 class _CategoryRouteState extends State<CategoryRoute> {
-  final _categories = <Category>[];
   Category? _defaultCategory;
   Category? _currentCategory;
 
+  final _categories = <Category>[];
   static const _baseColors = <ColorSwatch>[
     ColorSwatch(0xFF6AB7A8, {
       'highlight': Color(0xFF6AB7A8),
@@ -54,7 +55,6 @@ class _CategoryRouteState extends State<CategoryRoute> {
       'error': Color(0xFF912D2D),
     }),
   ];
-
   static const _icons = <String>[
     'assets/images/length.png',
     'assets/images/area.png',
@@ -70,8 +70,8 @@ class _CategoryRouteState extends State<CategoryRoute> {
   Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
     if (_categories.isEmpty) {
-      await _retrieveLocalCategories();
       await _retrieveApiCategory();
+      await _retrieveLocalCategories();
     }
   }
 
@@ -137,13 +137,17 @@ class _CategoryRouteState extends State<CategoryRoute> {
     });
   }
 
-  Widget _buildCategoryWidgets(Orientation orientation) {
-    if (orientation == Orientation.portrait) {
+  Widget _buildCategoryWidgets(Orientation deviceOrientation) {
+    if (deviceOrientation == Orientation.portrait) {
       return ListView.builder(
         itemBuilder: (BuildContext context, int index) {
+          var _category = _categories[index];
           return CategoryTile(
-            category: _categories[index],
-            onTap: _onCategoryTap,
+            category: _category,
+            onTap:
+                _category.name == apiCategory['name'] && _category.units.isEmpty
+                    ? null
+                    : _onCategoryTap,
           );
         },
         itemCount: _categories.length,
@@ -152,10 +156,12 @@ class _CategoryRouteState extends State<CategoryRoute> {
       return GridView.count(
         crossAxisCount: 2,
         childAspectRatio: 3.0,
-        children: _categories.map((Category category) {
+        children: _categories.map((Category c) {
           return CategoryTile(
-            category: category,
-            onTap: _onCategoryTap,
+            category: c,
+            onTap: c.name == apiCategory['name'] && c.units.isEmpty
+                ? null
+                : _onCategoryTap,
           );
         }).toList(),
       );
@@ -173,6 +179,7 @@ class _CategoryRouteState extends State<CategoryRoute> {
         ),
       );
     }
+
     assert(debugCheckHasMediaQuery(context));
     final listView = Padding(
       padding: const EdgeInsets.only(
@@ -182,7 +189,6 @@ class _CategoryRouteState extends State<CategoryRoute> {
       ),
       child: _buildCategoryWidgets(MediaQuery.of(context).orientation),
     );
-
     return Backdrop(
       currentCategory: _currentCategory ?? _defaultCategory!,
       frontPanel: _currentCategory == null
