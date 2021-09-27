@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class Category {
   final String name;
   final ColorSwatch color;
-  final IconData iconLocation;
+  final String iconLocation;
   final List<Unit> units;
 
   const Category({

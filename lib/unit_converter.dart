@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
 
+import 'api.dart';
 import 'category.dart';
 import 'unit.dart';
 
@@ -25,6 +26,7 @@ class _UnitConverterState extends State<UnitConverter> {
   String _convertedValue = '';
   List<DropdownMenuItem>? _unitMenuItems;
   bool _showValidationError = false;
+  final _inputKey = GlobalKey(debugLabel: 'inputText');
 
   @override
   void initState() {
@@ -48,7 +50,7 @@ class _UnitConverterState extends State<UnitConverter> {
       newItems.add(DropdownMenuItem(
         value: unit.name,
         child: Text(
-          unit.name,
+          unit.name!,
           softWrap: true,
         ),
       ));
@@ -63,6 +65,9 @@ class _UnitConverterState extends State<UnitConverter> {
       _fromValue = widget.category.units[0];
       _toValue = widget.category.units[1];
     });
+    if (_inputValue != null) {
+      _updateConversion();
+    }
   }
 
   String _format(double conversion) {
@@ -80,11 +85,21 @@ class _UnitConverterState extends State<UnitConverter> {
     return outputNum;
   }
 
-  void _updateConversion() {
-    setState(() {
-      _convertedValue = _format(
-          _inputValue! * (_toValue!.conversion / _fromValue!.conversion));
-    });
+  Future<void> _updateConversion() async {
+    if (widget.category.name == apiCategory['name']) {
+      final api = Api();
+      final conversion = await api.convert(apiCategory['route'],
+          _inputValue.toString(), _fromValue!.name, _toValue!.name);
+
+      setState(() {
+        _convertedValue = _format(conversion!);
+      });
+    } else {
+      setState(() {
+        _convertedValue = _format(
+            _inputValue! * (_toValue!.conversion! / _fromValue!.conversion!));
+      });
+    }
   }
 
   void _updateInputValue(String input) {
@@ -136,7 +151,6 @@ class _UnitConverterState extends State<UnitConverter> {
     return Container(
       margin: const EdgeInsets.only(top: 16.0),
       decoration: BoxDecoration(
-        // This sets the color of the [DropdownButton] itself
         color: Colors.grey[50],
         border: Border.all(
           color: Colors.grey[400]!,
@@ -145,7 +159,6 @@ class _UnitConverterState extends State<UnitConverter> {
       ),
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Theme(
-        // This sets the color of the [DropdownMenuItem]
         data: Theme.of(context).copyWith(
           canvasColor: Colors.grey[50],
         ),
@@ -172,6 +185,7 @@ class _UnitConverterState extends State<UnitConverter> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextField(
+            key: _inputKey,
             style: Theme.of(context).textTheme.headline4,
             decoration: InputDecoration(
               labelStyle: Theme.of(context).textTheme.headline4,
@@ -220,8 +234,7 @@ class _UnitConverterState extends State<UnitConverter> {
       ),
     );
 
-    final converter = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    final converter = ListView(
       children: [
         input,
         arrows,
@@ -231,21 +244,19 @@ class _UnitConverterState extends State<UnitConverter> {
 
     return Padding(
         padding: _padding,
-        child: SingleChildScrollView(
-          child: OrientationBuilder(
-            builder: (BuildContext context, Orientation orientation) {
-              if (orientation == Orientation.portrait) {
-                return converter;
-              } else {
-                return Center(
-                  child: SizedBox(
-                    width: 450.0,
-                    child: converter,
-                  ),
-                );
-              }
-            },
-          ),
+        child: OrientationBuilder(
+          builder: (BuildContext context, Orientation orientation) {
+            if (orientation == Orientation.portrait) {
+              return converter;
+            } else {
+              return Center(
+                child: SizedBox(
+                  width: 450.0,
+                  child: converter,
+                ),
+              );
+            }
+          },
         ));
   }
 }

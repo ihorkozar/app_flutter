@@ -1,11 +1,11 @@
+import 'dart:convert';
 import 'package:app_flutter/category.dart';
 import 'package:app_flutter/unit.dart';
 import 'package:app_flutter/unit_converter.dart';
 import 'package:flutter/material.dart';
+import 'api.dart';
 import 'backdrop/backdrop.dart';
 import 'category_tile.dart';
-
-final _backgroundColor = Colors.green[100];
 
 class CategoryRoute extends StatefulWidget {
   const CategoryRoute({Key? key}) : super(key: key);
@@ -18,17 +18,6 @@ class _CategoryRouteState extends State<CategoryRoute> {
   final _categories = <Category>[];
   Category? _defaultCategory;
   Category? _currentCategory;
-
-  static const _categoryNames = <String>[
-    'Length',
-    'Area',
-    'Volume',
-    'Mass',
-    'Time',
-    'Digital Storage',
-    'Energy',
-    'Currency',
-  ];
 
   static const _baseColors = <ColorSwatch>[
     ColorSwatch(0xFF6AB7A8, {
@@ -66,20 +55,79 @@ class _CategoryRouteState extends State<CategoryRoute> {
     }),
   ];
 
+  static const _icons = <String>[
+    'assets/images/length.png',
+    'assets/images/area.png',
+    'assets/images/volume.png',
+    'assets/images/mass.png',
+    'assets/images/time.png',
+    'assets/images/digital_storage.png',
+    'assets/images/power.png',
+    'assets/images/currency.png',
+  ];
+
   @override
-  void initState() {
-    super.initState();
-    for (var i = 0; i < _categoryNames.length; i++) {
-      var defCategory = Category(
-        name: _categoryNames[i],
-        color: _baseColors[i],
-        iconLocation: Icons.cake,
-        units: _unitList(_categoryNames[i]),
+  Future<void> didChangeDependencies() async {
+    super.didChangeDependencies();
+    if (_categories.isEmpty) {
+      await _retrieveLocalCategories();
+      await _retrieveApiCategory();
+    }
+  }
+
+  Future<void> _retrieveLocalCategories() async {
+    final json = DefaultAssetBundle.of(context)
+        .loadString('assets/data/regular_units.json');
+    final data = const JsonDecoder().convert(await json);
+    if (data is! Map) {
+      throw ('Data retrieved from API is not a Map');
+    }
+    var categoryIndex = 0;
+    for (var key in data.keys) {
+      final List<Unit> units =
+          data[key].map<Unit>((dynamic data) => Unit.fromJson(data)).toList();
+
+      var category = Category(
+        name: key,
+        units: units,
+        color: _baseColors[categoryIndex],
+        iconLocation: _icons[categoryIndex],
       );
-      if (i == 0) {
-        _defaultCategory = defCategory;
+      setState(() {
+        if (categoryIndex == 0) {
+          _defaultCategory = category;
+        }
+        _categories.add(category);
+      });
+      categoryIndex += 1;
+    }
+  }
+
+  Future<void> _retrieveApiCategory() async {
+    setState(() {
+      _categories.add(Category(
+        name: apiCategory['name']!,
+        units: [],
+        color: _baseColors.last,
+        iconLocation: _icons.last,
+      ));
+    });
+    final api = Api();
+    final jsonUnits = await api.getUnits(apiCategory['route']);
+    if (jsonUnits != null) {
+      final units = <Unit>[];
+      for (var unit in jsonUnits) {
+        units.add(Unit.fromJson(unit));
       }
-      _categories.add(defCategory);
+      setState(() {
+        _categories.removeLast();
+        _categories.add(Category(
+          name: apiCategory['name']!,
+          units: units,
+          color: _baseColors.last,
+          iconLocation: _icons.last,
+        ));
+      });
     }
   }
 
@@ -104,9 +152,9 @@ class _CategoryRouteState extends State<CategoryRoute> {
       return GridView.count(
         crossAxisCount: 2,
         childAspectRatio: 3.0,
-        children: _categories.map((Category c) {
+        children: _categories.map((Category category) {
           return CategoryTile(
-            category: c,
+            category: category,
             onTap: _onCategoryTap,
           );
         }).toList(),
@@ -114,19 +162,18 @@ class _CategoryRouteState extends State<CategoryRoute> {
     }
   }
 
-  ///Mock list
-  List<Unit> _unitList(String name) {
-    return List.generate(10, (int i) {
-      i += 1;
-      return Unit(
-        name: '$name Unit $i',
-        conversion: i.toDouble(),
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (_categories.isEmpty) {
+      return const Center(
+        child: SizedBox(
+          height: 180.0,
+          width: 180.0,
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    assert(debugCheckHasMediaQuery(context));
     final listView = Padding(
       padding: const EdgeInsets.only(
         left: 8.0,

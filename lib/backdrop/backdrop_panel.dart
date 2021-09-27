@@ -1,6 +1,4 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../category.dart';
 
 class BackdropPanel extends StatelessWidget {
   const BackdropPanel({
