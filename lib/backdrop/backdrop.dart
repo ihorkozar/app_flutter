@@ -45,15 +45,10 @@ class _BackdropState extends State<Backdrop>
   void didUpdateWidget(Backdrop old) {
     super.didUpdateWidget(old);
     if (widget.currentCategory != old.currentCategory) {
-      setState(() {
-        _controller.fling(
-            velocity:
-                _backdropPanelVisible ? -_kFlingVelocity : _kFlingVelocity);
-      });
+      _controller.fling(
+          velocity: _backdropPanelVisible ? -_kFlingVelocity : _kFlingVelocity);
     } else if (!_backdropPanelVisible) {
-      setState(() {
-        _controller.fling(velocity: _kFlingVelocity);
-      });
+      _controller.fling(velocity: _kFlingVelocity);
     }
   }
 
